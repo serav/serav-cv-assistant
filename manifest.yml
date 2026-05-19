@@ -1,0 +1,20 @@
+applications:
+  - name: flowmetrix-ai-chat
+    instances: 1
+    memory: 1024M
+    disk_quota: 1024M
+    buildpacks:
+      - java_buildpack_offline
+    routes:
+      - route: flowmetrix-chat.apps-internal.dev.datev.de
+    env:
+      JVM: openjdk
+      JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ }, memory_calculator: { stack_threads: 25 } }"
+      TZ: Europe/Berlin
+      debug: true
+      SPRING_PROFILES_ACTIVE: dev, cloud
+      JBP_CONFIG_DEBUG: '{"enabled": true, "port": 8000}'
+    services:
+      - flowmetrix-ai-chat-db
+      - flowmetrix-ai-chat-creds
+    path: ./target/flowmetrix-ai-chat-0.0.1-SNAPSHOT.jar

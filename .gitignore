@@ -1,0 +1,53 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+releases/
+.flattened-pom.xml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+*.class
+*.log
+
+# Vaadin
+/src/main/frontend/index.html
+src/main/frontend/generated/
+src/main/frontend/node_modules/
+src/main/frontend/build/
+src/main/frontend/dist/
+frontend/node_modules/
+frontend/build/
+webpack.generated.js
+webpack.config.js
+tsconfig.json
+types.d.ts
+
+# Spring Boot
+*.jar
+*.war
+*.zip
+application-local.properties
+
+# OS
+.DS_Store
+.DS_Store?
+*.swp
+*.swo
+*~
+.env
+.env.local
+
+/node_modules/
+/package.json
+/package-lock.json
+/vite.config.ts
+/vite.generated.ts
