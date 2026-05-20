@@ -187,7 +187,7 @@ public class ChatView extends VerticalLayout implements RouterLayout {
 
         var firstChunk = new AtomicBoolean(true);
 
-        chatController.introduction("Introduce yourself shortly, show the tools core features. Then ask the user for his name", conversationId)
+        chatController.chat("Introduce yourself shortly, show the tools core features. Then ask the user for his name", conversationId)
                 .subscribe(
                     cr -> getUI().orElseThrow().access(() -> {
                         if (firstChunk.getAndSet(false)) {

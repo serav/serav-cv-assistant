@@ -75,12 +75,9 @@ public class ChatService {
                 .build();
     }
 
-    public Flux<String> introduction(String message, UUID conversationId) {
-       log.info("Received introduction message: {} for conversation {}", message,  conversationId);
-       return chat(message, conversationId);
-    }
-
     public Flux<String> chat(String message, UUID conversationId) {
+        log.info("Received for conversation {}, message: {}", conversationId, message);
+
         return ai.prompt(message)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()

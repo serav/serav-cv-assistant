@@ -12,7 +12,7 @@ applications:
       JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ }, memory_calculator: { stack_threads: 25 } }"
       TZ: Europe/Berlin
       debug: true
-      SPRING_PROFILES_ACTIVE: dev, cloud
+      SPRING_PROFILES_ACTIVE: cloud
       JBP_CONFIG_DEBUG: '{"enabled": true, "port": 8000}'
     services:
       - flowmetrix-ai-chat-db
