@@ -30,6 +30,7 @@
         <java.version>25</java.version>
         <spring-ai.version>2.0.0-M4</spring-ai.version>
         <vaadin.version>25.1.5</vaadin.version>
+        <splunk-logging-version>1.11.8</splunk-logging-version>
     </properties>
     <dependencies>
         <dependency>
@@ -89,6 +90,12 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.splunk.logging</groupId>
+            <artifactId>splunk-library-javalogging</artifactId>
+            <version>${splunk-logging-version}</version>
         </dependency>
 
     </dependencies>

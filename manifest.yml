@@ -17,4 +17,5 @@ applications:
     services:
       - flowmetrix-ai-chat-db
       - flowmetrix-ai-chat-creds
+      - flowmetrix-ai-chat-splunk
     path: ./target/flowmetrix-ai-chat-0.0.1-SNAPSHOT.jar
