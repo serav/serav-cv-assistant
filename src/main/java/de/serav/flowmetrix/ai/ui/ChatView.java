@@ -92,17 +92,25 @@ public class ChatView extends VerticalLayout implements RouterLayout {
             messageList.add(reply);
             scrollToBottom(messageScroller);
 
+            messageInput.setEnabled(false);
             var firstChunk = new AtomicBoolean(true);
 
-            chatController.chat(ev.getValue(), conversationId).subscribe(cr ->
-                getUI().orElseThrow().access(() -> {
+            chatController.chat(ev.getValue(), conversationId).subscribe(
+                cr -> getUI().orElseThrow().access(() -> {
                     if (firstChunk.getAndSet(false)) {
                         reply.setMarkdown(cr);
                     } else {
                         reply.appendMarkdown(cr);
                     }
                     scrollToBottom(messageScroller);
-                })
+                }),
+                err -> getUI().orElseThrow().access(() -> {
+                    reply.setMarkdown("⚠️ **Error:** " + err.getMessage());
+                    styleErrorMessage(reply);
+                    messageInput.setEnabled(true);
+                    scrollToBottom(messageScroller);
+                }),
+                () -> getUI().orElseThrow().access(() -> messageInput.setEnabled(true))
             );
         });
 
@@ -116,14 +124,31 @@ public class ChatView extends VerticalLayout implements RouterLayout {
         var firstChunk = new AtomicBoolean(true);
 
         chatController.chat("Greet the user briefly and let them know what you can help them with.", conversationId)
-                .subscribe(cr -> getUI().orElseThrow().access(() -> {
-                    if (firstChunk.getAndSet(false)) {
-                        greeting.setMarkdown(cr);
-                    } else {
-                        greeting.appendMarkdown(cr);
-                    }
-                    scrollToBottom(messageScroller);
-                }));
+                .subscribe(
+                    cr -> getUI().orElseThrow().access(() -> {
+                        if (firstChunk.getAndSet(false)) {
+                            greeting.setMarkdown(cr);
+                        } else {
+                            greeting.appendMarkdown(cr);
+                        }
+                        scrollToBottom(messageScroller);
+                    }),
+                    err -> getUI().orElseThrow().access(() -> {
+                        greeting.setMarkdown("⚠️ **Could not connect to AI service.** Please check the configuration.");
+                        styleErrorMessage(greeting);
+                        scrollToBottom(messageScroller);
+                    }),
+                    () -> {}
+                );
+    }
+
+    private void styleErrorMessage(MarkdownMessage message) {
+        message.getStyle()
+                .set("background", "#fff1f2")
+                .set("border", "1px solid #fecdd3")
+                .set("border-radius", "8px")
+                .set("padding", "8px 12px")
+                .set("color", "#be123c");
     }
 
     private void scrollToBottom(Scroller scroller) {
