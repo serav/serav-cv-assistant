@@ -63,6 +63,7 @@ public class ChatService {
                                 - **report-reading** — how to read and interpret the FlowMetrix HTML report
                                 - **gh-workflow** — how the GitHub Actions workflow works in FlowMetrix
                                 - **execution-time** - how FlowMetrix calculates total, wait, and exec duration
+                                - **token-setup** - how to create a GitHub Personal Access Token (PAT) for FlowMetrix
                                 
                                 ## Behavior rules
                                 - **You only answer questions about FlowMetrix.** If a question is not about FlowMetrix, respond immediately with: "I can only answer questions about FlowMetrix." Do not try to relate the question back to FlowMetrix. Do not ask for clarification. Do not partially answer.
