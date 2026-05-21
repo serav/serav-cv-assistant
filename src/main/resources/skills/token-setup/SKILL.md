@@ -1,10 +1,11 @@
-# Skill: Token Setup
-
-## What this skill covers
-
-How to create a GitHub Personal Access Token (PAT) for FlowMetrix and how to configure SSO authorisation if the target organisation enforces SAML SSO.
-
 ---
+name: Token Setup
+description: Guide for creating a GitHub Personal Access Token (PAT) for FlowMetrix and how to configure SSO authorisation if the target organisation enforces SAML SSO.
+---
+
+# Setup Guide
+
+## Step-by-step setup
 
 ## Step 1 — Create the PAT
 
