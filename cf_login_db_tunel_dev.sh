@@ -1,3 +1,3 @@
 #!/bin/zsh
 
-cf login -a api.cf.dev.datev.de --sso -o dalo-migration-platform -s test && cf ssh -L 4712:pgd76182b-psql-master-alias.node.dc1.consul.a9s.dev:5432 flowmetrix-ai-chat
+cf login -a <url> --sso -o <org> -s <space> && cf ssh -L 4712:<service_url>:5432 flowmetrix-ai-chat

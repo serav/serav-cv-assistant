@@ -6,7 +6,7 @@ applications:
     buildpacks:
       - java_buildpack_offline
     routes:
-      - route: flowmetrix-chat.apps-internal.dev.datev.de
+      - route: flowmetrix-chat.com
     env:
       JVM: openjdk
       JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 25.+ }, memory_calculator: { stack_threads: 25 } }"
