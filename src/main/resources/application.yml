@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: serav-cv-assistant
+#
+  datasource:
+    url: jdbc:postgresql://${POSTGRESQL_ADDON_HOST}:${POSTGRESQL_ADDON_PORT}/${POSTGRESQL_ADDON_DB}
+    username: ${POSTGRESQL_ADDON_USER}
+    password: ${POSTGRESQL_ADDON_PASSWORD}
+
+  #
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
+    openai:
+      api-key: ${TOGETHER_AI_API_KEY}
+      base-url: https://api.together.xyz
+      chat:
+        options:
+          model: Qwen/Qwen3.7-Max   # verify exact model string on together.ai
+          temperature: 0.7
+          max-tokens: 1024
+          top-p: 0.9
+
+  #
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    de.serav.cv.assistant: DEBUG
+#
+vaadin:
+  productionMode: false
+  frontend:
+    hotdeploy: true

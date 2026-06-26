@@ -3,53 +3,16 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
-    <springProfile name="cloud">
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%thread)] %yellow(%logger{40}) : %msg%n
+            </pattern>
+        </layout>
+    </appender>
 
-        <springProperty name="splunk_token" source="vcap.services.flowmetrix-ai-chat-splunk.credentials.splunk_token"/>
-        <springProperty name="splunk_protocol" source="vcap.services.flowmetrix-ai-chat-splunk.credentials.splunk_protocol"/>
-        <springProperty name="splunk_host" source="vcap.services.flowmetrix-ai-chat-splunk.credentials.splunk_host"/>
-        <springProperty name="splunk_port" source="vcap.services.flowmetrix-ai-chat-splunk.credentials.splunk_port"/>
-        <springProperty name="splunk_index" source="vcap.services.flowmetrix-ai-chat-splunk.credentials.splunk_index"/>
-        <springProperty name="cf_space" source="vcap.application.space_name"/>
-        <springProperty name="cf_appname" source="vcap.application.application_name"/>
-        <springProperty name="foundation" source="FOUNDATION" defaultValue="local"/>
-
-        <appender name="SPLUNK" class="com.splunk.logging.HttpEventCollectorLogbackAppender">
-            <url>${splunk_protocol}://${splunk_host}:${splunk_port}</url>
-            <host>${foundation}</host>
-            <source>${cf_space}:${cf_appname}</source>
-            <sourcetype>spring-boot</sourcetype>
-            <token>${splunk_token}</token>
-            <disableCertificateValidation>true</disableCertificateValidation>
-            <batch_size_bytes>51200</batch_size_bytes>
-            <batch_interval>1000</batch_interval>
-            <retries_on_error>5</retries_on_error>
-            <messageFormat>text</messageFormat>
-            <eventHeaderSerializer>de.serav.flowmetrix.ai.splunk.JsonEventSerializer</eventHeaderSerializer>
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%msg%n</pattern>
-            </layout>
-        </appender>
-
-        <!-- Also write to stdout so CF Loggregator picks up app logs -->
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="SPLUNK"/>
-        </root>
-
-    </springProfile>
-
-    <springProfile name="!cloud">
-        <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <layout class="ch.qos.logback.classic.PatternLayout">
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%thread)] %yellow(%logger{40}) : %msg%n</pattern>
-            </layout>
-        </appender>
-
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
 
 </configuration>

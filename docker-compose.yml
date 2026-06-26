@@ -1,11 +1,11 @@
 services:
   flowmetrix-ai-chat-db:
     image: postgres:16
-    container_name: flowmetrix-ai-chat-db
+    container_name: serav-cv-ai-chat-db
     environment:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypass
-      POSTGRES_DB: flowmetrix
+      POSTGRES_DB: cv
     ports:
       - "5432:5432"
     volumes:

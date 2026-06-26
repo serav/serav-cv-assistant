@@ -1,0 +1,5 @@
+{
+  "deploy": {
+    "jarName": "target/cv-assistant-0.0.1-SNAPSHOT.jar"
+  }
+}

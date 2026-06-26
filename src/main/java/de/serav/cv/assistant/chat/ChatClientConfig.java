@@ -1,4 +1,4 @@
-package de.serav.flowmetrix.ai.chat;
+package de.serav.cv.assistant.chat;
 
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;

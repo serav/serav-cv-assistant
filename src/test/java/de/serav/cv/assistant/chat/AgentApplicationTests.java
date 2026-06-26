@@ -1,4 +1,4 @@
-package de.serav.flowmetrix.ai.chat;
+package de.serav.cv.assistant.chat;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

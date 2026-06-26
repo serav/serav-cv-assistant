@@ -35,7 +35,6 @@ types.d.ts
 *.jar
 *.war
 *.zip
-application-local.properties
 
 # OS
 .DS_Store

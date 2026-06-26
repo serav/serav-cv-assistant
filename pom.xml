@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>de.serav</groupId>
-    <artifactId>flowmetrix-ai-chat</artifactId>
+    <artifactId>cv-assistant</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name/>
     <description/>
@@ -30,7 +30,6 @@
         <java.version>25</java.version>
         <spring-ai.version>2.0.0-M4</spring-ai.version>
         <vaadin.version>25.1.5</vaadin.version>
-        <splunk-logging-version>1.11.8</splunk-logging-version>
     </properties>
     <dependencies>
         <dependency>
@@ -73,6 +72,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
+<!--        for local usage with ollama -->
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.ai</groupId>-->
+<!--            <artifactId>spring-ai-starter-model-ollama</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dev</artifactId>
@@ -91,13 +95,6 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.splunk.logging</groupId>
-            <artifactId>splunk-library-javalogging</artifactId>
-            <version>${splunk-logging-version}</version>
-        </dependency>
-
     </dependencies>
     <dependencyManagement>
         <dependencies>
