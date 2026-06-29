@@ -91,10 +91,10 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 var context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(auth);
                 SecurityContextHolder.setContext(context);
-                new HttpSessionSecurityContextRepository().saveContext(
-                        context,
-                        VaadinServletRequest.getCurrent().getHttpServletRequest(),
-                        VaadinServletResponse.getCurrent().getHttpServletResponse());
+                var httpRequest = VaadinServletRequest.getCurrent().getHttpServletRequest();
+                var httpResponse = VaadinServletResponse.getCurrent().getHttpServletResponse();
+                httpRequest.changeSessionId();
+                new HttpSessionSecurityContextRepository().saveContext(context, httpRequest, httpResponse);
                 getUI().ifPresent(ui -> ui.navigate(""));
             } catch (AuthenticationException ex) {
                 error.getStyle().set("display", "block");

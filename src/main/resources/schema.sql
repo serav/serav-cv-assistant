@@ -6,3 +6,10 @@ CREATE TABLE IF NOT EXISTS access_token (
     max_attempts  INT          NOT NULL DEFAULT 10,
     attempts_used INT          NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS conversation_session (
+    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id UUID        NOT NULL UNIQUE,
+    token_id        UUID        NOT NULL REFERENCES access_token(id),
+    started_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);

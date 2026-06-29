@@ -13,7 +13,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import de.serav.cv.assistant.auth.AuthenticatedToken;
+import de.serav.cv.assistant.auth.ConversationSessionRepository;
 import de.serav.cv.assistant.chat.ChatService;
 import jakarta.annotation.security.PermitAll;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,6 +57,7 @@ public class CvChatView extends Div {
     );
 
     private final ChatService chatService;
+    private final AuthenticationContext authContext;
     private final UUID conversationId;
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private final List<Div> chips = new ArrayList<>();
@@ -62,10 +66,19 @@ public class CvChatView extends Div {
     private TextField inputField;
     private Button sendButton;
 
-    public CvChatView(ChatService chatService) {
+    public CvChatView(ChatService chatService, AuthenticationContext authContext,
+                      ConversationSessionRepository conversationSessionRepository) {
         this.chatService = chatService;
+        this.authContext = authContext;
         var principal = (AuthenticatedToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        this.conversationId = principal.tokenId();
+        var session = VaadinSession.getCurrent();
+        var storedId = (UUID) session.getAttribute("conversationId");
+        if (storedId == null) {
+            storedId = UUID.randomUUID();
+            session.setAttribute("conversationId", storedId);
+            conversationSessionRepository.registerIfAbsent(storedId, principal.tokenId());
+        }
+        this.conversationId = storedId;
         getStyle()
                 .set("display", "flex")
                 .set("flex-direction", "column")
@@ -127,9 +140,21 @@ public class CvChatView extends Div {
                 .set("color", "#A5B4FC").set("font-size", "0.7rem").set("font-weight", "600")
                 .set("padding", "3px 11px").set("border-radius", "20px")
                 .set("border", "1px solid rgba(99,102,241,0.4)")
-                .set("white-space", "nowrap").set("align-self", "center").set("margin-left", "auto");
+                .set("white-space", "nowrap").set("align-self", "center");
 
-        var row = new Div( textBlock, badge);
+        var logoutBtn = new Button("Sign out");
+        logoutBtn.getStyle()
+                .set("background", "transparent")
+                .set("color", "rgba(255,255,255,0.65)")
+                .set("border", "1px solid rgba(255,255,255,0.25)")
+                .set("border-radius", "6px")
+                .set("font-size", "0.75rem")
+                .set("cursor", "pointer")
+                .set("padding", "4px 12px")
+                .set("margin-left", "auto");
+        logoutBtn.addClickListener(e -> authContext.logout());
+
+        var row = new Div(textBlock, badge, logoutBtn);
         row.getStyle()
                 .set("display", "flex").set("align-items", "center").set("gap", "14px")
                 .set("width", "100%");
