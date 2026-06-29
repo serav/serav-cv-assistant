@@ -13,7 +13,10 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import de.serav.cv.assistant.auth.AuthenticatedToken;
 import de.serav.cv.assistant.chat.ChatService;
+import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Route("")
 @PageTitle("Sergiu Avram — CV Assistant")
+@PermitAll
 public class CvChatView extends Div {
 
     private static final int MAX_LEN = 2000;
@@ -50,7 +54,7 @@ public class CvChatView extends Div {
     );
 
     private final ChatService chatService;
-    private final UUID conversationId = UUID.randomUUID();
+    private final UUID conversationId;
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private final List<Div> chips = new ArrayList<>();
 
@@ -60,6 +64,8 @@ public class CvChatView extends Div {
 
     public CvChatView(ChatService chatService) {
         this.chatService = chatService;
+        var principal = (AuthenticatedToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        this.conversationId = principal.tokenId();
         getStyle()
                 .set("display", "flex")
                 .set("flex-direction", "column")

@@ -25,12 +25,19 @@ spring:
           top-p: 0.9
 
   #
+  sql:
+    init:
+      mode: always
+
   threads:
     virtual:
       enabled: true
 
 server:
   port: 8080
+  servlet:
+    session:
+      timeout: ${SESSION_TIMEOUT:5m}
 
 logging:
   level:
