@@ -95,7 +95,9 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 var httpResponse = VaadinServletResponse.getCurrent().getHttpServletResponse();
                 httpRequest.changeSessionId();
                 new HttpSessionSecurityContextRepository().saveContext(context, httpRequest, httpResponse);
-                getUI().ifPresent(ui -> ui.navigate(""));
+                // Full browser redirect so the updated session cookie (from changeSessionId) reaches
+                // the browser before any subsequent page load — prevents re-authentication on F5.
+                getUI().ifPresent(ui -> ui.getPage().setLocation("/"));
             } catch (AuthenticationException ex) {
                 error.getStyle().set("display", "block");
                 tokenField.clear();

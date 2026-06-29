@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -40,7 +42,17 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             throw new LockedException("Token has reached its maximum number of uses");
         }
 
-        repository.save(accessToken.incrementUsage());
+        // Increment usage at most once per HTTP session — page reloads must not burn an attempt.
+        var sessionKey = "scv_counted_" + accessToken.id();
+        var attrs = RequestContextHolder.getRequestAttributes();
+        var httpSession = attrs instanceof ServletRequestAttributes sra
+                ? sra.getRequest().getSession(false) : null;
+        if (httpSession == null || httpSession.getAttribute(sessionKey) == null) {
+            repository.save(accessToken.incrementUsage());
+            if (httpSession != null) {
+                httpSession.setAttribute(sessionKey, Boolean.TRUE);
+            }
+        }
 
         return new UsernamePasswordAuthenticationToken(
                 new AuthenticatedToken(accessToken.id(), accessToken.label()), null,

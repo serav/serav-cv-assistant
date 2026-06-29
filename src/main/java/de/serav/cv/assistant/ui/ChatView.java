@@ -188,7 +188,7 @@ public class ChatView extends Div {
             if (!isActive) {
                 btn.addClickListener(e -> {
                     VaadinSession.getCurrent().setAttribute("selectedLocale", lang);
-                    getUI().ifPresent(ui -> ui.navigate(ChatView.class));
+                    getUI().ifPresent(ui -> ui.getPage().reload());
                 });
             }
             wrap.add(btn);
@@ -236,7 +236,7 @@ public class ChatView extends Div {
         var stats = new Div(
                 stat("📍", "Fürth, Bavaria, Germany"),
                 stat("🔬", "10+ years of experience"),
-                stat("🎓", "CS Diploma (equiv. Master)"),
+                stat("🎓", "Dipl.-Inform. · Univ. Politécnica de Valencia"),
                 stat("🌍", "DE · EN · ES · RO"),
                 statLink("👨🏻‍💻", "GitHub", "https://github.com/serav")
 
