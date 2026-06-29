@@ -23,13 +23,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Route("")
 @PageTitle("Sergiu Avram — CV Assistant")
 @PermitAll
-public class CvChatView extends Div {
+public class ChatView extends Div {
 
     private static final int MAX_LEN = 2000;
 
@@ -47,18 +48,11 @@ public class CvChatView extends Div {
     private static final String NAME  = "Sergiu Avram";
     private static final String TITLE = "Cloud-native Software Engineer · Java & Spring Boot";
 
-    private static final List<String> QUICK_QS = List.of(
-            "What is Sergiu's current role?",
-            "What are his key technical skills?",
-            "Tell me about his education",
-            "What languages does he speak?",
-            "Describe his leadership experience",
-            "What are his hobbies and interests?"
-    );
-
     private final ChatService chatService;
     private final AuthenticationContext authContext;
     private final UUID conversationId;
+    private final Locale locale;
+    private final UiStrings strings;
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private final List<Div> chips = new ArrayList<>();
 
@@ -66,12 +60,19 @@ public class CvChatView extends Div {
     private TextField inputField;
     private Button sendButton;
 
-    public CvChatView(ChatService chatService, AuthenticationContext authContext,
-                      ConversationSessionRepository conversationSessionRepository) {
+    public ChatView(ChatService chatService, AuthenticationContext authContext,
+                    ConversationSessionRepository conversationSessionRepository) {
         this.chatService = chatService;
         this.authContext = authContext;
         var principal = (AuthenticatedToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var session = VaadinSession.getCurrent();
+
+        var manualLocale = (Locale) session.getAttribute("selectedLocale");
+        var detected = session.getLocale();
+        this.locale = manualLocale != null ? manualLocale
+                : (detected != null && detected.getLanguage().equals("de") ? Locale.GERMAN : Locale.ENGLISH);
+        this.strings = UiStrings.forLocale(this.locale);
+
         var storedId = (UUID) session.getAttribute("conversationId");
         if (storedId == null) {
             storedId = UUID.randomUUID();
@@ -104,10 +105,7 @@ public class CvChatView extends Div {
         streaming.set(true);
         var bubble = addAssistantBubble();
         var sb = new StringBuilder();
-        chatService.chat(
-                "Greet the visitor in 2–3 friendly sentences. You are Sergiu's CV assistant. Invite them to ask anything about his experience, skills, or background.",
-                conversationId
-        ).subscribe(
+        chatService.chat(strings.greetingPrompt(), conversationId, locale).subscribe(
                 chunk -> getUI().orElseThrow().access(() -> {
                     sb.append(chunk);
                     renderBubble(bubble, sb.toString());
@@ -142,7 +140,9 @@ public class CvChatView extends Div {
                 .set("border", "1px solid rgba(99,102,241,0.4)")
                 .set("white-space", "nowrap").set("align-self", "center");
 
-        var logoutBtn = new Button("Sign out");
+        var langToggle = buildLangToggle();
+
+        var logoutBtn = new Button(strings.signOut());
         logoutBtn.getStyle()
                 .set("background", "transparent")
                 .set("color", "rgba(255,255,255,0.65)")
@@ -150,11 +150,13 @@ public class CvChatView extends Div {
                 .set("border-radius", "6px")
                 .set("font-size", "0.75rem")
                 .set("cursor", "pointer")
-                .set("padding", "4px 12px")
-                .set("margin-left", "auto");
+                .set("padding", "4px 12px");
         logoutBtn.addClickListener(e -> authContext.logout());
 
-        var row = new Div(textBlock, badge, logoutBtn);
+        var spacer = new Div();
+        spacer.getStyle().set("flex", "1");
+
+        var row = new Div(textBlock, badge, spacer, langToggle, logoutBtn);
         row.getStyle()
                 .set("display", "flex").set("align-items", "center").set("gap", "14px")
                 .set("width", "100%");
@@ -167,6 +169,31 @@ public class CvChatView extends Div {
                 .set("box-sizing", "border-box")
                 .set("flex-shrink", "0");
         return header;
+    }
+
+    private Div buildLangToggle() {
+        var wrap = new Div();
+        wrap.getStyle()
+                .set("display", "flex").set("gap", "4px").set("align-items", "center");
+
+        for (var lang : new Locale[]{Locale.ENGLISH, Locale.GERMAN}) {
+            var isActive = lang.getLanguage().equals(locale.getLanguage());
+            var btn = new Button(lang.getLanguage().toUpperCase());
+            btn.getStyle()
+                    .set("background", isActive ? "rgba(255,255,255,0.18)" : "transparent")
+                    .set("color", isActive ? "#fff" : "rgba(255,255,255,0.5)")
+                    .set("border", "1px solid " + (isActive ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)"))
+                    .set("border-radius", "5px").set("font-size", "0.7rem").set("font-weight", "600")
+                    .set("cursor", "pointer").set("padding", "3px 9px").set("min-width", "0");
+            if (!isActive) {
+                btn.addClickListener(e -> {
+                    VaadinSession.getCurrent().setAttribute("selectedLocale", lang);
+                    getUI().ifPresent(ui -> ui.navigate(ChatView.class));
+                });
+            }
+            wrap.add(btn);
+        }
+        return wrap;
     }
 
     // ── Body ────────────────────────────────────────────────────────────────
@@ -208,10 +235,10 @@ public class CvChatView extends Div {
 
         var stats = new Div(
                 stat("📍", "Fürth, Bavaria, Germany"),
-                stat("⏱", "10+ years of experience"),
+                stat("🔬", "10+ years of experience"),
                 stat("🎓", "CS Diploma (equiv. Master)"),
                 stat("🌍", "DE · EN · ES · RO"),
-                statLink("👨🏻‍💻", "github.com/serav", "https://github.com/serav")
+                statLink("👨🏻‍💻", "GitHub", "https://github.com/serav")
 
 
         );
@@ -222,7 +249,7 @@ public class CvChatView extends Div {
         var divider = new Div();
         divider.getStyle().set("height", "1px").set("background", "#E2E8F0").set("margin-bottom", "14px");
 
-        var chipsLabel = new Span("Quick questions");
+        var chipsLabel = new Span(strings.quickQuestionsLabel());
         chipsLabel.getStyle()
                 .set("font-size", "0.7rem").set("font-weight", "700").set("color", C_TEXT_LIGHT)
                 .set("text-transform", "uppercase").set("letter-spacing", "0.07em")
@@ -230,7 +257,7 @@ public class CvChatView extends Div {
 
         var chipsDiv = new Div();
         chipsDiv.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "6px");
-        for (var q : QUICK_QS) {
+        for (var q : strings.quickQuestions()) {
             var chip = new Div();
             chip.setText(q);
             chip.addClassName("cv-chip");
@@ -305,7 +332,7 @@ public class CvChatView extends Div {
 
     private Div buildInputBar() {
         inputField = new TextField();
-        inputField.setPlaceholder("Ask anything about Sergiu…");
+        inputField.setPlaceholder(strings.inputPlaceholder());
         inputField.addClassName("cv-input");
         inputField.setWidthFull();
         inputField.addKeyPressListener(Key.ENTER, e -> submit(inputField.getValue()));
@@ -334,7 +361,7 @@ public class CvChatView extends Div {
     private void submit(String text) {
         if (text == null || text.isBlank() || streaming.get()) return;
         if (text.length() > MAX_LEN) {
-            addSystemNote("Message too long (max " + MAX_LEN + " characters).");
+            addSystemNote(strings.messageTooLong().formatted(MAX_LEN));
             return;
         }
         inputField.clear();
@@ -345,7 +372,7 @@ public class CvChatView extends Div {
         var bubble = addAssistantBubble();
         var sb = new StringBuilder();
 
-        chatService.chat(text, conversationId).subscribe(
+        chatService.chat(text, conversationId, locale).subscribe(
                 chunk -> getUI().orElseThrow().access(() -> {
                     sb.append(chunk);
                     renderBubble(bubble, sb.toString());

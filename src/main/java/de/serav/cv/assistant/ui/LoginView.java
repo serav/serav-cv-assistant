@@ -50,7 +50,7 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 .set("max-width", "400px")
                 .set("box-sizing", "border-box");
 
-        var title = new H1("Sergiu's CV Assistant");
+        var title = new H1("Sergiu Avram's CV Assistant");
         title.getStyle()
                 .set("margin", "0 0 6px 0")
                 .set("font-size", "1.6rem")
@@ -113,7 +113,7 @@ public class LoginView extends Div implements BeforeEnterObserver {
     public void beforeEnter(BeforeEnterEvent event) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            event.forwardTo(CvChatView.class);
+            event.forwardTo(ChatView.class);
         }
     }
 }

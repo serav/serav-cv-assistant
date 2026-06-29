@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -71,10 +72,16 @@ public class ChatService {
                 .build();
     }
 
-    public Flux<String> chat(String message, UUID conversationId) {
+    public Flux<String> chat(String message, UUID conversationId, Locale locale) {
         log.info("Received for conversation {}, message: {}", conversationId, message);
 
-        return ai.prompt(message)
+        var langInstruction = Locale.GERMAN.getLanguage().equals(locale.getLanguage())
+                ? "Always respond in German (Deutsch)."
+                : "Always respond in English.";
+
+        return ai.prompt()
+                .user(message)
+                .system(langInstruction)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content()
