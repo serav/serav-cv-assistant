@@ -50,3 +50,7 @@ types.d.ts
 /package-lock.json
 /vite.config.ts
 /vite.generated.ts
+
+
+cv-input/
+cv-output/
