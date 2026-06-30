@@ -55,3 +55,4 @@ types.d.ts
 cv-input/
 cv-output/
 issues/
+/src/main/resources/skills/backup/
