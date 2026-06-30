@@ -49,6 +49,6 @@ logging:
     de.serav.cv.assistant: DEBUG
 #
 vaadin:
-  productionMode: false
+  productionMode: true
   frontend:
-    hotdeploy: true
+    hotdeploy: false
