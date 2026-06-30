@@ -34,7 +34,7 @@ types.d.ts
 # Spring Boot
 *.jar
 *.war
-*.zip
+
 
 # OS
 .DS_Store

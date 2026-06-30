@@ -21,11 +21,10 @@ spring:
       base-url: https://api.together.xyz
       chat:
         options:
-          model: Qwen/Qwen3.7-Max   # verify exact model string on together.ai
+          model: meta-llama/Llama-3.3-70B-Instruct-Turbo
           temperature: 0.7
           max-tokens: 1024
           top-p: 0.9
-
   #
   sql:
     init:
@@ -40,6 +39,9 @@ server:
   servlet:
     session:
       timeout: ${SESSION_TIMEOUT:5m}
+
+app:
+  skills-unpack: ${SKILLS_ZIP_UNPACK}
 
 logging:
   level:
