@@ -17,12 +17,12 @@ record UiStrings(
 
     static final UiStrings EN = new UiStrings(
             List.of(
-                    "What is Sergiu's current role?",
-                    "What are his key technical skills?",
-                    "Tell me about his education",
-                    "What languages does he speak?",
-                    "What do former employers say about him?",
-                    "What is his experience with cloud and AI?"
+                    "What is your current role?",
+                    "What are your key technical skills?",
+                    "Tell me about your education",
+                    "What languages do you speak?",
+                    "What do former employers say about you?",
+                    "What is your experience with cloud and AI?"
             ),
             "Quick questions",
             "Ask anything about Sergiu…",
@@ -33,12 +33,12 @@ record UiStrings(
 
     static final UiStrings DE = new UiStrings(
             List.of(
-                    "Was ist Sergius aktuelle Position?",
-                    "Was sind seine wichtigsten technischen Fähigkeiten?",
-                    "Erzähl mir von seiner Ausbildung",
-                    "Welche Sprachen spricht er?",
-                    "Was sagen frühere Arbeitgeber über ihn?",
-                    "Was sind seine Erfahrungen mit Cloud und KI?"
+                    "Was ist Ihre aktuelle Position?",
+                    "Was sind Ihre wichtigsten technischen Fähigkeiten?",
+                    "Erzählen Sie mir von Ihrer Ausbildung",
+                    "Welche Sprachen sprechen Sie?",
+                    "Was sagen frühere Arbeitgeber über Sie?",
+                    "Was sind Ihre Erfahrungen mit Cloud und KI?"
             ),
             "Schnellfragen",
             "Frag mich alles über Sergiu…",
