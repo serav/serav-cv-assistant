@@ -57,7 +57,7 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 .set("font-weight", "700")
                 .set("color", "#1E293B");
 
-        var subtitle = new Paragraph("Enter your access token to continue.");
+        var subtitle = new Paragraph("Please enter your access token to continue.");
         subtitle.getStyle()
                 .set("margin", "0 0 28px 0")
                 .set("font-size", "0.88rem")

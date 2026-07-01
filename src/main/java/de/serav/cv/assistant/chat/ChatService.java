@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -49,8 +48,7 @@ public class ChatService {
             - If the relevant skill contains no mention of the topic, answer in first person \
             without referencing the CV as a document. For example: \
             "C++? That's not something I've worked with professionally."
-
-            {langInstruction}
+            - Always respond in the same language the user writes in.
             """;
 
     public ChatService(ChatClient.Builder ai, PromptChatMemoryAdvisor promptChatMemoryAdvisor,
@@ -107,16 +105,11 @@ public class ChatService {
                 .build();
     }
 
-    public Flux<String> chat(String message, UUID conversationId, Locale locale) {
+    public Flux<String> chat(String message, UUID conversationId) {
         log.info("Received for conversation {}, message: {}", conversationId, message);
-
-        var langInstruction = Locale.GERMAN.getLanguage().equals(locale.getLanguage())
-                ? "Always respond in German (Deutsch)."
-                : "Always respond in English.";
 
         return ai.prompt()
                 .user(message)
-                .system(s -> s.param("langInstruction", langInstruction))
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content()

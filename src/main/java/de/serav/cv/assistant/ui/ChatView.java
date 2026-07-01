@@ -70,9 +70,7 @@ public class ChatView extends Div {
         var session = VaadinSession.getCurrent();
 
         var manualLocale = (Locale) session.getAttribute("selectedLocale");
-        var detected = session.getLocale();
-        this.locale = manualLocale != null ? manualLocale
-                : (detected != null && detected.getLanguage().equals("de") ? Locale.GERMAN : Locale.ENGLISH);
+        this.locale = manualLocale != null ? manualLocale : Locale.ENGLISH;
         this.strings = UiStrings.forLocale(this.locale);
 
         var storedId = (UUID) session.getAttribute("conversationId");
@@ -107,7 +105,7 @@ public class ChatView extends Div {
         streaming.set(true);
         var bubble = addAssistantBubble();
         var sb = new StringBuilder();
-        chatService.chat(strings.greetingPrompt(), conversationId, locale).subscribe(
+        chatService.chat(strings.greetingPrompt(), conversationId).subscribe(
                 chunk -> getUI().orElseThrow().access(() -> {
                     sb.append(chunk);
                     renderBubble(bubble, sb.toString());
@@ -180,7 +178,8 @@ public class ChatView extends Div {
 
         for (var lang : new Locale[]{Locale.ENGLISH, Locale.GERMAN}) {
             var isActive = lang.getLanguage().equals(locale.getLanguage());
-            var btn = new Button(lang.getLanguage().toUpperCase());
+            var flag = lang.getLanguage().equals("de") ? "🇩🇪" : "🇬🇧";
+            var btn = new Button(flag + " " + lang.getLanguage().toUpperCase());
             btn.getStyle()
                     .set("background", isActive ? "rgba(255,255,255,0.18)" : "transparent")
                     .set("color", isActive ? "#fff" : "rgba(255,255,255,0.5)")
@@ -374,7 +373,7 @@ public class ChatView extends Div {
         var bubble = addAssistantBubble();
         var sb = new StringBuilder();
 
-        chatService.chat(text, conversationId, locale).subscribe(
+        chatService.chat(text, conversationId).subscribe(
                 chunk -> getUI().orElseThrow().access(() -> {
                     sb.append(chunk);
                     renderBubble(bubble, sb.toString());
