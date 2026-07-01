@@ -21,8 +21,8 @@ record UiStrings(
                     "What are his key technical skills?",
                     "Tell me about his education",
                     "What languages does he speak?",
-                    "Describe his leadership experience",
-                    "What are his hobbies and interests?"
+                    "What do former employers say about him?",
+                    "What is his experience with cloud and AI?"
             ),
             "Quick questions",
             "Ask anything about Sergiu…",
@@ -37,8 +37,8 @@ record UiStrings(
                     "Was sind seine wichtigsten technischen Fähigkeiten?",
                     "Erzähl mir von seiner Ausbildung",
                     "Welche Sprachen spricht er?",
-                    "Beschreibe seine Führungserfahrung",
-                    "Was sind seine Hobbys und Interessen?"
+                    "Was sagen frühere Arbeitgeber über ihn?",
+                    "Was sind seine Erfahrungen mit Cloud und KI?"
             ),
             "Schnellfragen",
             "Frag mich alles über Sergiu…",

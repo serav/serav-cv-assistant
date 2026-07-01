@@ -39,29 +39,30 @@ Request flow: Vaadin view → `ChatService` → Spring AI `ChatClient` → Ollam
 - **`ChatClientConfig`** (`chat/ChatClientConfig.java`) — wires a `PromptChatMemoryAdvisor` over a JDBC-backed `MessageWindowChatMemory` (last 20 messages, Postgres). The advisor is applied as a default advisor in `ChatService`.
 - **`SeravCVAIChat`** — Spring Boot entrypoint; `@Push` enables Vaadin server push (needed for streaming tokens into the UI).
 
-### Three chat views (three routes, very different)
+### Routes
 
-- **`CvChatView`** → route **`/`** (default) — the primary view. Two-column layout (profile sidebar + chat). Wires `ChatService` for real streaming AI. **This is the main view to develop.**
-- **`ChatView`** → route **`/mis`** — an older, simpler AI-backed view using viritin `MarkdownMessage` bubbles. Still wires `ChatService`.
-- **`CvChatViewNew`** → route **`/per`** — a standalone view with a **hardcoded CV knowledge base** (constants like `CURRENT_JOB`, `EDUCATION`) answered by a local `generateAnswer(...)` string matcher. It does **not** call `ChatService` or any LLM.
+- **`ChatView`** → route **`/`** — the only chat view. Token-gated via Spring Security; streams AI responses token-by-token using Vaadin Push.
+- **`LoginView`** → route **`/login`** — token entry form, publicly accessible.
 
 ### Configuration & profiles
 
-- `application.yml` — **default/local** profile: Ollama base-url, qwen2.5:7b chat model, nomic-embed-text embeddings, local Postgres, virtual threads on, Vaadin dev mode (`productionMode: false`, hotdeploy). Commented-out OpenAI/Together blocks show the alternative provider wiring.
-- `application-cloud.properties` — **cloud** profile (activated by `SPRING_PROFILES_ACTIVE=cloud`), currently fully commented out; reads DB/creds from Cloud Foundry `vcap.services` bindings.
-- Switching LLM provider means swapping the Spring AI starter in `pom.xml` (`spring-ai-starter-model-ollama` ↔ `spring-ai-starter-model-openai`, both present, OpenAI commented) plus the matching config block.
+- `application.yml` — the single committed config file. All environment-specific values are injected via `${ENV_VAR}` placeholders. Production defaults (`vaadin.productionMode: true`).
+- `application-local.yml` — gitignored local overrides (local DB, Together.ai key, Vaadin dev mode). Activate with `-Dspring.profiles.active=local`.
+- Switching LLM provider means swapping the Spring AI starter in `pom.xml` (`spring-ai-starter-model-ollama` ↔ `spring-ai-starter-model-openai`) plus the matching config block in `application.yml`.
 
-### Deployment (Cloud Foundry)
+### Skills (CV knowledge base)
 
-`manifest.yml` + helper scripts deploy to CF. Scripts contain placeholders (`<url>`, `<org>`, `<space>`, `<service_url>`) — fill before use.
-- `cf_login_and_push.sh` — `mvn clean package -Pproduction -DskipTests` then `cf login --sso` then `cf push`.
-- `cf_login_db_tunel_dev.sh` — opens an SSH tunnel (`cf ssh -L`) to the bound Postgres service for local debugging.
+CV content lives in SKILL.md files (gitignored) packed into a password-protected `src/main/resources/skills/skills.zip`. On startup, `ChatService` extracts the ZIP to a temp directory using the password from `${SKILLS_ZIP_UNPACK}` and loads the skills into a `SkillsTool` (single tool named `Skill`). The LLM calls this tool with a skill name (`command` parameter) to retrieve CV content before answering.
 
-## Naming caveat (rename in progress)
+### Deployment (Clever Cloud)
 
-The project was renamed **FlowMetrix AI Chat → Serav CV AI Chat**. Java packages are now `de.serav.cv.assistant`, but legacy `flowmetrix` names persist in config and must not be assumed consistent: `spring.application.name=flowmetrix-ai-chat`, the CF app/service names in `manifest.yml`, and the route `flowmetrix-chat.com`. When touching config, check which name a given resource actually uses rather than assuming.
+Deployed as a Spring Boot fat JAR on Clever Cloud. All credentials and config come from Clever Cloud environment variables. DB is a Clever Cloud PostgreSQL add-on; credentials injected via `POSTGRESQL_ADDON_*` env vars.
 
-The `src/main/resources/skills/*/SKILL.md` files are leftover **FlowMetrix** docs (GitHub Actions metrics tooling), unrelated to this CV app. They were meant to feed a Spring AI `SkillsTool`, but that wiring is **commented out** in `ChatService` — they are currently dead/inert. Don't treat them as docs for this project.
+## Rules
+
+**Environment variables are set only in `application.yml` — Java code reads Spring properties, never env vars directly.**
+
+Map every env var to a Spring property key in `application.yml` using `${ENV_VAR}` syntax, then inject with `@Value("${spring.property.key}")` or `@ConfigurationProperties`. Never use `System.getenv()` or `System.getProperty()` in application code.
 
 ## Key versions
 

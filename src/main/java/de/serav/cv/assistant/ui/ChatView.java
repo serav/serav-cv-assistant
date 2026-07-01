@@ -53,6 +53,7 @@ public class ChatView extends Div {
     private final UUID conversationId;
     private final Locale locale;
     private final UiStrings strings;
+    private final String tokenLabel;
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private final List<Div> chips = new ArrayList<>();
 
@@ -65,6 +66,7 @@ public class ChatView extends Div {
         this.chatService = chatService;
         this.authContext = authContext;
         var principal = (AuthenticatedToken) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        this.tokenLabel = principal.label();
         var session = VaadinSession.getCurrent();
 
         var manualLocale = (Locale) session.getAttribute("selectedLocale");
@@ -126,7 +128,7 @@ public class ChatView extends Div {
         var nameSpan = new Span(NAME + "'s CV Assistant");
         nameSpan.getStyle().set("color", "#fff").set("font-weight", "700").set("font-size", "1.05rem");
 
-        var sub = new Span(TITLE);
+        var sub = new Span("Welcome, " + tokenLabel);
         sub.getStyle().set("color", "rgba(255,255,255,0.6)").set("font-size", "0.77rem");
 
         var textBlock = new Div(nameSpan, sub);
