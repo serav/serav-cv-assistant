@@ -188,7 +188,9 @@ public class ChatView extends Div {
                     .set("cursor", "pointer").set("padding", "3px 9px").set("min-width", "0");
             if (!isActive) {
                 btn.addClickListener(e -> {
-                    VaadinSession.getCurrent().setAttribute("selectedLocale", lang);
+                    var s = VaadinSession.getCurrent();
+                    s.setAttribute("selectedLocale", lang);
+                    s.setAttribute("conversationId", null);
                     getUI().ifPresent(ui -> ui.getPage().reload());
                 });
             }

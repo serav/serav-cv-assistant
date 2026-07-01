@@ -16,6 +16,8 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -98,7 +100,16 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 // Full browser redirect so the updated session cookie (from changeSessionId) reaches
                 // the browser before any subsequent page load — prevents re-authentication on F5.
                 getUI().ifPresent(ui -> ui.getPage().setLocation("/"));
+            } catch (CredentialsExpiredException ex) {
+                error.setText("This token has expired. Please request a new one.");
+                error.getStyle().set("display", "block");
+                loginBtn.setEnabled(false);
+            } catch (LockedException ex) {
+                error.setText("This token has reached its maximum number of uses. Please request a new one.");
+                error.getStyle().set("display", "block");
+                loginBtn.setEnabled(false);
             } catch (AuthenticationException ex) {
+                error.setText("Invalid token. Please try again.");
                 error.getStyle().set("display", "block");
                 tokenField.clear();
             }
