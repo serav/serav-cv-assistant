@@ -3,10 +3,11 @@ package de.serav.cv.assistant.chat;
 import net.lingala.zip4j.ZipFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springaicommunity.agent.tools.SkillsTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.tool.annotation.ToolParam;
+import org.springframework.ai.tool.function.FunctionToolCallback;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,9 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -30,13 +33,12 @@ public class ChatService {
             You are Sergiu's CV AI Assistant — a personalised AI that answers questions about \
             Sergiu's professional experience, skills, career history, and background.
 
-            You have access to a Skill tool that retrieves accurate information about Sergiu. \
-            Always call the Skill tool with the appropriate skill name before answering. \
-            The available skill names are listed in the tool's description.
+            You have access to a tool called getCvSection that retrieves accurate information \
+            about Sergiu. Always call getCvSection with the appropriate section name before answering.
 
             ## How to respond
 
-            - Always call the Skill tool first to retrieve relevant information before composing your answer.
+            - Always call getCvSection first to retrieve relevant information before composing your answer.
             - Answer **only** questions about Sergiu, his CV, experience, or skills.
             - If asked about someone else or an unrelated topic, say: \
             "I can only answer questions about Sergiu's CV and experience."
@@ -64,6 +66,10 @@ public class ChatService {
                 .build();
     }
 
+    private record CvSectionQuery(
+            @ToolParam(description = "The CV section to retrieve. One of: personal-summary, work-experience, technical-skills, education-and-training, professional-character, languages-and-methods")
+            String section) {}
+
     private static org.springframework.ai.tool.ToolCallback loadSkills(
             ResourceLoader resourceLoader, String password) throws IOException {
 
@@ -78,10 +84,26 @@ public class ChatService {
         }
         Files.delete(tempZip);
 
-        log.info("Skills extracted to {}", tempDir);
+        Map<String, String> sections = new HashMap<>();
+        try (var dirs = Files.list(tempDir)) {
+            dirs.filter(Files::isDirectory).forEach(dir -> {
+                var skillFile = dir.resolve("SKILL.md");
+                if (Files.exists(skillFile)) {
+                    try {
+                        sections.put(dir.getFileName().toString(), Files.readString(skillFile));
+                    } catch (IOException e) {
+                        log.warn("Could not read skill file: {}", skillFile);
+                    }
+                }
+            });
+        }
+        log.info("Loaded {} CV sections: {}", sections.size(), sections.keySet());
 
-        return SkillsTool.builder()
-                .addSkillsDirectory(tempDir.toString())
+        return FunctionToolCallback
+                .builder("getCvSection", (CvSectionQuery q) ->
+                        sections.getOrDefault(q.section(), "No information found for section: " + q.section()))
+                .description("Retrieves a section of Sergiu's CV. Call this before answering any question about Sergiu.")
+                .inputType(CvSectionQuery.class)
                 .build();
     }
 
