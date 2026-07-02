@@ -43,6 +43,14 @@ server:
 app:
   skills-unpack: ${SKILLS_ZIP_UNPACK}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  prometheus:
+    scrape-token: ${PROMETHEUS_SCRAPE_TOKEN}
+
 logging:
   level:
     root: INFO

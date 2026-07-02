@@ -2,9 +2,11 @@ package de.serav.cv.assistant;
 
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 import de.serav.cv.assistant.ui.LoginView;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,11 +16,18 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${management.prometheus.scrape-token}")
+    private String prometheusScrapeToken;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/images/**", "/*.png", "/*.jpg", "/*.ico").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/prometheus").access((authentication, context) -> {
+                    var header = context.getRequest().getHeader("Authorization");
+                    return new AuthorizationDecision(("Bearer " + prometheusScrapeToken).equals(header));
+                })
                 .requestMatchers("/actuator/**").denyAll()
         );
         http.with(VaadinSecurityConfigurer.vaadin(),

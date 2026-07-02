@@ -1,5 +1,6 @@
 package de.serav.cv.assistant.auth;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -22,9 +23,11 @@ import java.util.List;
 public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     private final AccessTokenRepository repository;
+    private final MeterRegistry meterRegistry;
 
-    public TokenAuthenticationProvider(AccessTokenRepository repository) {
+    public TokenAuthenticationProvider(AccessTokenRepository repository, MeterRegistry meterRegistry) {
         this.repository = repository;
+        this.meterRegistry = meterRegistry;
     }
 
     @Override
@@ -49,6 +52,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
                 ? sra.getRequest().getSession(false) : null;
         if (httpSession == null || httpSession.getAttribute(sessionKey) == null) {
             repository.save(accessToken.incrementUsage());
+            meterRegistry.counter("cv.login", "label", accessToken.label()).increment();
             if (httpSession != null) {
                 httpSession.setAttribute(sessionKey, Boolean.TRUE);
             }
