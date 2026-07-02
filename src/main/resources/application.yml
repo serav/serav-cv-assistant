@@ -49,7 +49,8 @@ management:
       exposure:
         include: health, prometheus
   prometheus:
-    scrape-token: ${PROMETHEUS_SCRAPE_TOKEN}
+    username: ${CC_METRICS_PROMETHEUS_USER}
+    password: ${CC_METRICS_PROMETHEUS_PASSWORD}
 
 logging:
   level:

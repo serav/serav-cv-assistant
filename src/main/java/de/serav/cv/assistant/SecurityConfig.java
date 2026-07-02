@@ -5,29 +5,48 @@ import de.serav.cv.assistant.ui.LoginView;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${management.prometheus.scrape-token}")
-    private String prometheusScrapeToken;
+    @Value("${management.prometheus.username}")
+    private String prometheusUsername;
+
+    @Value("${management.prometheus.password}")
+    private String prometheusPassword;
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain prometheusFilterChain(HttpSecurity http) throws Exception {
+        var user = User.withUsername(prometheusUsername)
+                .password("{noop}" + prometheusPassword)
+                .roles("PROMETHEUS")
+                .build();
+
+        http
+                .securityMatcher("/actuator/prometheus")
+                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .userDetailsService(new InMemoryUserDetailsManager(user))
+                .csrf(csrf -> csrf.disable());
+        return http.build();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/images/**", "/*.png", "/*.jpg", "/*.ico").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/actuator/prometheus").access((authentication, context) -> {
-                    var header = context.getRequest().getHeader("Authorization");
-                    return new AuthorizationDecision(("Bearer " + prometheusScrapeToken).equals(header));
-                })
                 .requestMatchers("/actuator/**").denyAll()
         );
         http.with(VaadinSecurityConfigurer.vaadin(),
