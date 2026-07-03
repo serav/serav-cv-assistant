@@ -51,6 +51,13 @@ management:
   prometheus:
     username: ${CC_METRICS_PROMETHEUS_USER}
     password: ${CC_METRICS_PROMETHEUS_PASSWORD}
+  otlp:
+    metrics:
+      export:
+        url: ${GRAFANA_OTLP_URL}
+        headers:
+          Authorization: Basic ${GRAFANA_OTLP_TOKEN}
+        step: 60s
 
 logging:
   level:
