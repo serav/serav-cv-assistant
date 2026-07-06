@@ -8,7 +8,7 @@ record UiStrings(
         String quickQuestionsLabel,
         String inputPlaceholder,
         String signOut,
-        String greetingPrompt,
+        String greetingMessage,
         String messageTooLong
 ) {
     static UiStrings forLocale(Locale locale) {
@@ -27,7 +27,7 @@ record UiStrings(
             "Quick questions",
             "Ask anything about Sergiu…",
             "Sign out",
-            "Greet the visitor in 2–3 friendly sentences. You are Sergiu's CV assistant. Invite them to ask anything about his experience, skills, or background. Respond in English.",
+            "Hi! I'm Sergiu's CV assistant. Ask me anything about my professional experience, technical skills, education, or background — use the quick questions on the left or type your own.",
             "Message too long (max %d characters)."
     );
 
@@ -43,7 +43,7 @@ record UiStrings(
             "Schnellfragen",
             "Frag mich alles über Sergiu…",
             "Abmelden",
-            "Begrüße den Besucher in 2–3 freundlichen Sätzen auf Deutsch. Du bist Sergius Lebenslauf-Assistent. Lade ihn ein, alles über seine Erfahrung, Fähigkeiten oder seinen Hintergrund zu fragen. Antworte auf Deutsch.",
+            "Hallo! Ich bin Sergius Lebenslauf-Assistent. Frag mich alles über meine Berufserfahrung, technischen Fähigkeiten, Ausbildung oder meinen Werdegang — nutze die Schnellfragen auf der linken Seite oder stell deine eigene Frage.",
             "Nachricht zu lang (max. %d Zeichen)."
     );
 }

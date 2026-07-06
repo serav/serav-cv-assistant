@@ -101,22 +101,10 @@ public class ChatView extends Div {
     @Override
     protected void onAttach(AttachEvent e) {
         super.onAttach(e);
-        setInputEnabled(false);
-        streaming.set(true);
         var bubble = addAssistantBubble();
-        var sb = new StringBuilder();
-        chatService.chat(strings.greetingPrompt(), conversationId).subscribe(
-                chunk -> getUI().orElseThrow().access(() -> {
-                    sb.append(chunk);
-                    renderBubble(bubble, sb.toString());
-                    scrollToBottom();
-                }),
-                err -> getUI().orElseThrow().access(() -> {
-                    renderBubble(bubble, "Hello! I'm Sergiu's CV assistant. Feel free to ask me anything about his background and experience.");
-                    enableInput();
-                }),
-                () -> getUI().orElseThrow().access(this::enableInput)
-        );
+        renderBubble(bubble, strings.greetingMessage());
+        scrollToBottom();
+        enableInput();
     }
 
     // ── Header ──────────────────────────────────────────────────────────────
@@ -421,7 +409,7 @@ public class ChatView extends Div {
                 .set("border-left", "3px solid " + C_ACCENT)
                 .set("box-shadow", "0 2px 8px rgba(0,0,0,0.06)");
 
-        var av = avatar("SA", "0.65rem", "28px", "28px");
+        var av = avatar("✦", "0.85rem", "28px", "28px");
         av.getStyle().set("margin-bottom", "2px").set("flex-shrink", "0").set("align-self", "flex-end");
 
         var row = new Div(av, bubble);
