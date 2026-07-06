@@ -80,11 +80,11 @@ public class ChatView extends Div {
             conversationSessionRepository.registerIfAbsent(storedId, principal.tokenId());
         }
         this.conversationId = storedId;
+        addClassName("cv-root");
         getStyle()
                 .set("display", "flex")
                 .set("flex-direction", "column")
                 .set("width", "100%")
-                .set("height", "100vh")
                 .set("margin", "0")
                 .set("padding", "0")
                 .set("box-sizing", "border-box")
@@ -133,6 +133,7 @@ public class ChatView extends Div {
         textBlock.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "2px");
 
         var badge = new Span("✦ AI-powered");
+        badge.addClassName("cv-badge");
         badge.getStyle()
                 .set("background", "rgba(99,102,241,0.2)")
                 .set("color", "#A5B4FC").set("font-size", "0.7rem").set("font-weight", "600")
@@ -536,6 +537,7 @@ public class ChatView extends Div {
               s.id='cv-chat-css';
               s.textContent=`
                 html, body, #outlet { margin: 0 !important; padding: 0 !important; overflow: hidden; }
+                .cv-root { height: 100vh; height: 100dvh; }
                 @keyframes blink  { 0%,80%,100%{ opacity:.2 } 40%{ opacity:1 } }
                 @keyframes fadeUp { from{ opacity:0; transform:translateY(7px) } to{ opacity:1; transform:none } }
                 .msg-row { animation: fadeUp .2s ease-out; }
@@ -561,7 +563,10 @@ public class ChatView extends Div {
                 .cv-send-btn::part(base):hover {
                   background: #4338CA;
                 }
-                @media (max-width: 680px) { .cv-sidebar { display: none !important; } }
+                @media (max-width: 680px) {
+                  .cv-sidebar { display: none !important; }
+                  .cv-badge { display: none !important; }
+                }
               `;
               document.head.appendChild(s);
             }
