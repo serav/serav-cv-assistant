@@ -11,6 +11,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import java.util.List;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -29,6 +30,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 public class LoginView extends Div implements BeforeEnterObserver {
 
     private final AuthenticationManager authManager;
+    private final PasswordField tokenField = new PasswordField("Access token");
 
     public LoginView(AuthenticationManager authManager) {
         this.authManager = authManager;
@@ -65,7 +67,6 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 .set("font-size", "0.88rem")
                 .set("color", "#64748B");
 
-        var tokenField = new PasswordField("Access token");
         tokenField.setWidthFull();
         tokenField.getStyle().set("margin-bottom", "16px");
 
@@ -127,6 +128,14 @@ public class LoginView extends Div implements BeforeEnterObserver {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
             event.forwardTo(ChatView.class);
+            return;
+        }
+        var token = event.getLocation().getQueryParameters()
+                .getParameters()
+                .getOrDefault("token", List.of())
+                .stream().findFirst().orElse(null);
+        if (token != null) {
+            tokenField.setValue(token);
         }
     }
 }
