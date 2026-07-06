@@ -40,7 +40,9 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 .set("align-items", "center")
                 .set("justify-content", "center")
                 .set("width", "100%")
-                .set("height", "100vh")
+                .set("min-height", "100vh")
+                .set("padding", "16px")
+                .set("box-sizing", "border-box")
                 .set("background", "#F8FAFC")
                 .set("font-family", "'Inter', 'Segoe UI', sans-serif");
 
@@ -49,7 +51,7 @@ public class LoginView extends Div implements BeforeEnterObserver {
                 .set("background", "white")
                 .set("border-radius", "16px")
                 .set("box-shadow", "0 4px 24px rgba(0,0,0,0.08)")
-                .set("padding", "40px 48px")
+                .set("padding", "32px 28px")
                 .set("width", "100%")
                 .set("max-width", "400px")
                 .set("box-sizing", "border-box");
