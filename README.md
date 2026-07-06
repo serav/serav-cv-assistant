@@ -24,7 +24,7 @@ Live on **[Clever Cloud](https://www.clever-cloud.com)**, powered by LLMs from *
 | Framework | Spring Boot 4.0.6 |
 | AI | Spring AI 2.0.0-M4 |
 | LLM provider | Together AI (OpenAI-compatible endpoint) |
-| LLM model | Qwen/Qwen3-Max |
+| LLM model | meta-llama/Llama-3.3-70B-Instruct-Turbo |
 | UI | Vaadin Flow 25.1.5 (React 19 under the hood) |
 | Security | Spring Security — token-based auth |
 | Database | PostgreSQL (chat memory + token store) |
@@ -39,7 +39,7 @@ Browser (Vaadin UI)
        │
        ▼
   ChatView  ──────────►  ChatService  ──────────►  Together AI
-       │                        │                    (Qwen3-Max)
+       │                        │                    (meta-llama/Llama-3.3-70B-Instruct-Turbo)
        │                        │ streams Flux<String>
        │                   ChatClient
        │                  (Spring AI)
