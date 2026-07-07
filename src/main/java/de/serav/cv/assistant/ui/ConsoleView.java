@@ -1,14 +1,15 @@
 package de.serav.cv.assistant.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import de.serav.cv.assistant.console.ConsoleRepository;
 import de.serav.cv.assistant.console.ChatMessage;
+import de.serav.cv.assistant.console.ConsoleRepository;
 import de.serav.cv.assistant.console.ConversationSummary;
 import jakarta.annotation.security.RolesAllowed;
 
@@ -102,7 +103,23 @@ public class ConsoleView extends Div {
         var filterLabel = new Span("Label:");
         filterLabel.getStyle().set("font-size", "0.82rem").set("font-weight", "600").set("color", C_TEXT_MED);
 
-        var filterRow = new Div(filterLabel, select);
+        var showEmptyToggle = new Checkbox("Show empty");
+        showEmptyToggle.setValue(false);
+        showEmptyToggle.getStyle().set("font-size", "0.82rem").set("color", C_TEXT_MED);
+
+        var spacer = new Div();
+        spacer.getStyle().set("flex", "1");
+
+        var deleteBtn = new Button("Delete selected");
+        deleteBtn.setEnabled(false);
+        deleteBtn.getStyle()
+                .set("background", "#DC2626").set("color", "white")
+                .set("border", "none").set("border-radius", "6px")
+                .set("font-size", "0.75rem").set("font-weight", "600")
+                .set("cursor", "pointer").set("padding", "4px 12px")
+                .set("white-space", "nowrap");
+
+        var filterRow = new Div(filterLabel, select, spacer, showEmptyToggle, deleteBtn);
         filterRow.getStyle()
                 .set("display", "flex").set("align-items", "center").set("gap", "10px")
                 .set("padding", "12px 16px").set("background", "white")
@@ -120,11 +137,28 @@ public class ConsoleView extends Div {
                 .setHeader("Total msgs").setWidth("110px").setFlexGrow(0).setSortable(true);
 
         grid.getStyle().set("flex", "1 1 0").set("min-height", "0");
-        grid.setSelectionMode(Grid.SelectionMode.SINGLE);
-        grid.addSelectionListener(e -> e.getFirstSelectedItem().ifPresent(this::loadMessages));
+        grid.setSelectionMode(Grid.SelectionMode.MULTI);
+        grid.addSelectionListener(e -> {
+            var selected = e.getAllSelectedItems();
+            deleteBtn.setEnabled(!selected.isEmpty());
+            if (selected.size() == 1) loadMessages(selected.iterator().next());
+            else { messagePanel.removeAll(); showStats(); }
+        });
 
-        loadGrid(null);
-        select.addValueChangeListener(e -> loadGrid(ALL.equals(e.getValue()) ? null : e.getValue()));
+        deleteBtn.addClickListener(e -> {
+            var ids = grid.getSelectedItems().stream()
+                    .map(ConversationSummary::conversationId).toList();
+            repo.deleteConversations(ids);
+            loadGrid(ALL.equals(select.getValue()) ? null : select.getValue(), showEmptyToggle.getValue());
+            messagePanel.removeAll();
+            showStats();
+        });
+
+        loadGrid(null, false);
+        select.addValueChangeListener(e -> loadGrid(
+                ALL.equals(e.getValue()) ? null : e.getValue(), showEmptyToggle.getValue()));
+        showEmptyToggle.addValueChangeListener(e -> loadGrid(
+                ALL.equals(select.getValue()) ? null : select.getValue(), e.getValue()));
 
         var left = new Div(filterRow, grid);
         left.getStyle()
@@ -152,7 +186,7 @@ public class ConsoleView extends Div {
                 .set("display", "flex").set("flex-direction", "column")
                 .set("gap", "10px").set("padding", "16px").set("background", "#F1F5F9");
 
-        showEmpty();
+        showStats();
 
         var right = new Div(titleBar, messagePanel);
         right.getStyle()
@@ -163,15 +197,15 @@ public class ConsoleView extends Div {
 
     // ── Data helpers ─────────────────────────────────────────────────────────
 
-    private void loadGrid(String labelFilter) {
-        grid.setItems(repo.getConversations(labelFilter));
+    private void loadGrid(String labelFilter, boolean includeEmpty) {
+        grid.setItems(repo.getConversations(labelFilter, includeEmpty));
     }
 
     private void loadMessages(ConversationSummary conv) {
         messagePanel.removeAll();
         var messages = repo.getMessages(conv.conversationId());
         if (messages.isEmpty()) {
-            showEmpty();
+            showStats();
             return;
         }
         for (var msg : messages) {
@@ -181,11 +215,57 @@ public class ConsoleView extends Div {
         messagePanel.getElement().executeJs("this.scrollTop = this.scrollHeight;");
     }
 
-    private void showEmpty() {
-        var hint = new Span("Select a conversation to view its messages.");
-        hint.getStyle().set("color", C_TEXT_LIGHT).set("font-size", "0.85rem")
-                .set("text-align", "center").set("margin", "auto");
-        messagePanel.add(hint);
+    private void showStats() {
+        var stats = repo.getLabelStats();
+
+        var table = new Div();
+        table.getStyle()
+                .set("width", "100%").set("border-collapse", "collapse")
+                .set("font-size", "0.82rem");
+
+        // Header row
+        table.add(statsRow(true, "Label", "With messages", "Without", "Total"));
+
+        for (var s : stats) {
+            table.add(statsRow(false,
+                    s.label(),
+                    String.valueOf(s.withMessages()),
+                    String.valueOf(s.withoutMessages()),
+                    String.valueOf(s.total())));
+        }
+
+        if (stats.isEmpty()) {
+            var empty = new Span("No conversations yet.");
+            empty.getStyle().set("color", C_TEXT_LIGHT).set("font-size", "0.85rem")
+                    .set("margin", "auto");
+            messagePanel.add(empty);
+            return;
+        }
+
+        messagePanel.add(table);
+    }
+
+    private Div statsRow(boolean header, String... cells) {
+        var row = new Div();
+        row.getStyle()
+                .set("display", "grid")
+                .set("grid-template-columns", "1fr 120px 90px 80px")
+                .set("padding", "7px 10px")
+                .set("border-bottom", "1px solid #E2E8F0")
+                .set("background", header ? "#F8FAFC" : "white");
+        for (var text : cells) {
+            var cell = new Span(text);
+            cell.getStyle()
+                    .set("font-weight", header ? "700" : "400")
+                    .set("color", header ? C_TEXT_MED : C_TEXT_DARK)
+                    .set("font-size", header ? "0.75rem" : "0.82rem")
+                    .set("text-transform", header ? "uppercase" : "none")
+                    .set("letter-spacing", header ? "0.05em" : "0")
+                    .set("overflow", "hidden").set("text-overflow", "ellipsis")
+                    .set("white-space", "nowrap");
+            row.add(cell);
+        }
+        return row;
     }
 
     // ── Message bubble ───────────────────────────────────────────────────────

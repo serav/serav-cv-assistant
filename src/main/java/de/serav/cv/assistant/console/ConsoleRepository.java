@@ -25,7 +25,8 @@ public class ConsoleRepository {
                 """, String.class);
     }
 
-    public List<ConversationSummary> getConversations(String labelFilter) {
+    public List<ConversationSummary> getConversations(String labelFilter, boolean includeEmpty) {
+        var having = includeEmpty ? "" : "HAVING COUNT(m.type) FILTER (WHERE m.type = 'USER') > 0";
         var sql = """
                 SELECT cs.conversation_id, at.label, cs.started_at,
                        COUNT(m.type) FILTER (WHERE m.type = 'USER') AS user_messages,
@@ -33,10 +34,11 @@ public class ConsoleRepository {
                 FROM conversation_session cs
                 JOIN access_token at ON at.id = cs.token_id
                 LEFT JOIN spring_ai_chat_memory m ON m.conversation_id = cs.conversation_id::text
-                %s
+                %%s
                 GROUP BY cs.conversation_id, at.label, cs.started_at
+                %s
                 ORDER BY cs.started_at DESC
-                """;
+                """.formatted(having);
 
         var mapper = (org.springframework.jdbc.core.RowMapper<ConversationSummary>) (rs, row) ->
                 new ConversationSummary(
@@ -51,6 +53,46 @@ public class ConsoleRepository {
             return jdbc.query(sql.formatted(""), mapper);
         }
         return jdbc.query(sql.formatted("WHERE at.label = ?"), mapper, labelFilter);
+    }
+
+    public List<LabelStats> getLabelStats() {
+        return jdbc.query("""
+                SELECT label,
+                       SUM(CASE WHEN user_count > 0 THEN 1 ELSE 0 END) AS with_messages,
+                       SUM(CASE WHEN user_count = 0 THEN 1 ELSE 0 END) AS without_messages
+                FROM (
+                    SELECT at.label,
+                           COUNT(m.type) FILTER (WHERE m.type = 'USER') AS user_count
+                    FROM conversation_session cs
+                    JOIN access_token at ON at.id = cs.token_id
+                    LEFT JOIN spring_ai_chat_memory m ON m.conversation_id = cs.conversation_id::text
+                    GROUP BY at.label, cs.conversation_id
+                ) sub
+                GROUP BY label
+                ORDER BY label
+                """,
+                (rs, row) -> new LabelStats(
+                        rs.getString("label"),
+                        rs.getLong("with_messages"),
+                        rs.getLong("without_messages")
+                ));
+    }
+
+    public void deleteConversations(List<UUID> ids) {
+        if (ids.isEmpty()) return;
+        var idStrings = ids.stream().map(UUID::toString).toArray(String[]::new);
+        jdbc.update(conn -> {
+            var ps = conn.prepareStatement(
+                    "DELETE FROM spring_ai_chat_memory WHERE conversation_id = ANY(?)");
+            ps.setArray(1, conn.createArrayOf("text", idStrings));
+            return ps;
+        });
+        jdbc.update(conn -> {
+            var ps = conn.prepareStatement(
+                    "DELETE FROM conversation_session WHERE conversation_id = ANY(?)");
+            ps.setArray(1, conn.createArrayOf("uuid", ids.toArray(UUID[]::new)));
+            return ps;
+        });
     }
 
     public List<ChatMessage> getMessages(UUID conversationId) {
