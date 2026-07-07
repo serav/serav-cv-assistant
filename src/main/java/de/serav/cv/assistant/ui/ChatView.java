@@ -145,7 +145,23 @@ public class ChatView extends Div {
         var spacer = new Div();
         spacer.getStyle().set("flex", "1");
 
-        var row = new Div(textBlock, badge, spacer, langToggle, logoutBtn);
+        var isAdmin = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        var consoleBtn = new Button("Console");
+        consoleBtn.getStyle()
+                .set("background", "transparent")
+                .set("color", "rgba(255,255,255,0.65)")
+                .set("border", "1px solid rgba(255,255,255,0.25)")
+                .set("border-radius", "6px")
+                .set("font-size", "0.75rem")
+                .set("cursor", "pointer")
+                .set("padding", "4px 12px");
+        consoleBtn.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate(ConsoleView.class)));
+        consoleBtn.setVisible(isAdmin);
+
+        var row = new Div(textBlock, badge, spacer, langToggle, consoleBtn, logoutBtn);
         row.getStyle()
                 .set("display", "flex").set("align-items", "center").set("gap", "14px")
                 .set("width", "100%");

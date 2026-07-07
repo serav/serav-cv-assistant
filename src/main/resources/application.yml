@@ -42,6 +42,7 @@ server:
 
 app:
   skills-unpack: ${SKILLS_ZIP_UNPACK}
+  console-label: ${CONSOLE_LABEL}
 
 management:
   endpoints:

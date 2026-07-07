@@ -1,6 +1,7 @@
 package de.serav.cv.assistant.auth;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -24,10 +26,14 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     private final AccessTokenRepository repository;
     private final MeterRegistry meterRegistry;
+    private final String adminLabel;
 
-    public TokenAuthenticationProvider(AccessTokenRepository repository, MeterRegistry meterRegistry) {
+    public TokenAuthenticationProvider(AccessTokenRepository repository,
+                                       MeterRegistry meterRegistry,
+                                       @Value("${app.console-label}") String adminLabel) {
         this.repository = repository;
         this.meterRegistry = meterRegistry;
+        this.adminLabel = adminLabel;
     }
 
     @Override
@@ -58,9 +64,14 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
             }
         }
 
+        var authorities = new ArrayList<SimpleGrantedAuthority>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if (adminLabel.equalsIgnoreCase(accessToken.label())) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
         return new UsernamePasswordAuthenticationToken(
-                new AuthenticatedToken(accessToken.id(), accessToken.label()), null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                new AuthenticatedToken(accessToken.id(), accessToken.label()), null, authorities);
     }
 
     @Override
